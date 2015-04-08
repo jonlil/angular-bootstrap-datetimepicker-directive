@@ -1,52 +1,53 @@
-'use strict';
+(function() {
+  'use strict';
 
-angular
-  .module('datetimepicker', [])
+  var module = angular.module('datetimepicker', []);
 
-  .provider('datetimepicker', function () {
-    var default_options = {};
+
+  module.provider('datetimepicker', function() {
+    var defaultOptions = {};
 
     this.setOptions = function (options) {
-      default_options = options;
+      defaultOptions = options;
     };
 
     this.$get = function () {
       return {
         getOptions: function () {
-          return default_options;
+          return defaultOptions;
         }
       };
     };
-  })
+  });
 
-  .directive('datetimepicker', [
+  
+  function DateTimePickerDirective($timeout, datetimepicker) {
+    var defaultOptions = datetimepicker.getOptions();
+
+    return {
+      require: '?ngModel',
+      restrict: 'AE',
+      link: function ($scope, $element, $attrs, ngModelCtrl) {
+        var datetimepickerOptions = $scope.$eval($attrs.datetimepickerOptions);
+        var options = angular.extend({}, defaultOptions, datetimepickerOptions);
+
+        $element
+          .on('dp.change', function (e) {
+            if (ngModelCtrl) {
+              $timeout(function () {
+                ngModelCtrl.$setViewValue(e.date._d);
+              });
+            }
+          })
+          .datetimepicker(options);
+      }
+    };
+  }
+  DateTimePickerDirective.$inject = [
     '$timeout',
-    'datetimepicker',
-    function ($timeout,
-              datetimepicker) {
+    'datetimepicker'
+  ];
 
-      var default_options = datetimepicker.getOptions();
+  module.directive('datetimepicker', DateTimePickerDirective);
 
-      return {
-        require : '?ngModel',
-        restrict: 'AE',
-        scope   : {
-          datetimepickerOptions: '@'
-        },
-        link    : function ($scope, $element, $attrs, ngModelCtrl) {
-          var passed_in_options = $scope.$eval($attrs.datetimepickerOptions);
-          var options = jQuery.extend({}, default_options, passed_in_options);
-
-          $element
-            .on('dp.change', function (on_change_event) {
-              if (ngModelCtrl) {
-                $timeout(function () {
-                  ngModelCtrl.$setViewValue(on_change_event.target.value);
-                });
-              }
-            })
-            .datetimepicker(options);
-        }
-      };
-    }
-  ]);
+})();
