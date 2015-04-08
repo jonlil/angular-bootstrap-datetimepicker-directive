@@ -20,7 +20,7 @@
     };
   });
 
-  
+
   function DateTimePickerDirective($timeout, datetimepicker) {
     var defaultOptions = datetimepicker.getOptions();
 
